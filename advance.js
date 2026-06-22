@@ -30,6 +30,84 @@ var name = '';
 var gameid = '';
 var gamename = '';
 var current_cfg = 0;
+const SATURN_SYSTEM = 12;
+const DEV_PAD_ALT = 1;
+const ACC_MEM = 1;
+const SATURN_LABEL = labelName.indexOf('Saturn');
+const PAD_LM = 24;
+const PAD_LT = 26;
+const PAD_RM = 28;
+const PAD_RT = 30;
+const saturnPadAltAccCfg = [
+    '3D Pad',
+    'Mission Stick',
+    'Racing Controller',
+    'Reserved',
+];
+
+function refreshOutputLabels() {
+    var system = document.getElementById("systemCfg");
+    var mode = document.getElementById("outputMode");
+    var acc = document.getElementById("outputAcc");
+
+    if (!system || !mode || !acc) {
+        return;
+    }
+
+    var labels = (Number(system.value) == SATURN_SYSTEM && Number(mode.value) == DEV_PAD_ALT) ?
+        saturnPadAltAccCfg : accCfg;
+
+    for (var i = 0; i < acc.options.length; i++) {
+        acc.options[i].text = labels[i];
+    }
+    refreshDstLabels();
+}
+
+function getDstLabel(btnId) {
+    var system = document.getElementById("systemCfg");
+    var mode = document.getElementById("outputMode");
+    var acc = document.getElementById("outputAcc");
+
+    if (destLabel == SATURN_LABEL && system && mode && acc &&
+        Number(system.value) == SATURN_SYSTEM && Number(mode.value) == DEV_PAD_ALT &&
+        Number(acc.value) == ACC_MEM) {
+        switch (btnId) {
+            case PAD_LM:
+                return 'Analog L';
+            case PAD_LT:
+                return 'Digital L';
+            case PAD_RM:
+                return 'Mission AZ';
+            case PAD_RT:
+                return 'Digital R';
+        }
+    }
+    return btnList[btnId][destLabel];
+}
+
+function getDstOptionsHtml() {
+    var str = "";
+
+    for (var i = 0; i < btnList.length; i++) {
+        str += "<option value=\"" + i + "\">" + getDstLabel(i) + "</option>";
+    }
+    return str;
+}
+
+function refreshDstLabels() {
+    var select = document.getElementsByClassName("dest");
+    var str = getDstOptionsHtml();
+    var tmp;
+
+    for (var i = 0; i < select.length; i++) {
+        tmp = select[i].value;
+        select[i].innerHTML = str;
+        select[i].value = tmp;
+    }
+    if (mappingElement && mappingElement.querySelector('.dest')) {
+        mappingElement.querySelector('.dest').innerHTML = str;
+    }
+}
 
 function initGlobalCfg() {
     var divGlobalCfg = document.getElementById("divGlobalCfg");
@@ -59,6 +137,7 @@ function initGlobalCfg() {
         sel.add(option);
     }
     sel.id = "systemCfg";
+    sel.addEventListener("change", refreshOutputLabels);
     div.appendChild(label);
     div.appendChild(sel);
 
@@ -209,6 +288,7 @@ function initOutputMode() {
         main.add(option);
     }
     main.id = "outputMode";
+    main.addEventListener("change", refreshOutputLabels);
     span.appendChild(label);
     span.appendChild(main);
     div.appendChild(span);
@@ -381,6 +461,7 @@ function initFirstOutputMapping() {
 
     var dest = src.cloneNode(true);
     dest.setAttribute("class", "dest");
+    dest.innerHTML = getDstOptionsHtml();
     span.appendChild(label);
     span.appendChild(dest);
     mappingElement.appendChild(span);
@@ -585,6 +666,7 @@ function initOutputMapping() {
     /* Dest */
     var dest = src.cloneNode(true);
     dest.setAttribute("class", "dest");
+    dest.innerHTML = getDstOptionsHtml();
     dest.title = "This is the destination button/axis on the wired interface.";
     mappingElement.appendChild(dest);
 
@@ -713,6 +795,7 @@ function loadGlobalCfg() {
             if (apiVersion > 1) {
                 document.getElementById("banksel").value = value.getUint8(3);
             }
+            refreshOutputLabels();
             resolve();
         })
         .catch(error => {
@@ -743,6 +826,7 @@ function loadOutputCfg(cfgId) {
             log('Output ' + cfgId + ' Config size: ' + value.byteLength);
             document.getElementById("outputMode").value = value.getUint8(0);
             document.getElementById("outputAcc").value = value.getUint8(1);
+            refreshOutputLabels();
             resolve();
         })
         .catch(error => {
@@ -1236,19 +1320,6 @@ function changeSrcLabel() {
 }
 
 function changeDstLabel() {
-    var select = document.getElementsByClassName("dest");
-    var str = ""
-    var tmp;
-
     destLabel = this.value;
-
-    for (var i = 0; i < btnList.length; i++) {
-        str += "<option value=\"" + i + "\">" + btnList[i][destLabel] + "</option>";
-    }
-    for (var i = 0; i < select.length; i++) {
-        tmp = select[i].value;
-        select[i].innerHTML = str;
-        select[i].value = tmp;
-    }
-    mappingElement.querySelector('.dest').innerHTML = str;
+    refreshDstLabels();
 }
