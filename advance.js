@@ -34,6 +34,8 @@ const SATURN_SYSTEM = 12;
 const DEV_PAD_ALT = 1;
 const ACC_MEM = 1;
 const SATURN_LABEL = labelName.indexOf('Saturn');
+const PAD_RY_DOWN = 6;
+const PAD_RY_UP = 7;
 const PAD_LM = 24;
 const PAD_LT = 26;
 const PAD_RM = 28;
@@ -72,12 +74,16 @@ function getDstLabel(btnId) {
         Number(system.value) == SATURN_SYSTEM && Number(mode.value) == DEV_PAD_ALT &&
         Number(acc.value) == ACC_MEM) {
         switch (btnId) {
+            case PAD_RY_DOWN:
+                return 'Mission Z-';
+            case PAD_RY_UP:
+                return 'Mission Z+';
             case PAD_LM:
-                return 'Analog L';
+                return 'Unused L analog';
             case PAD_LT:
                 return 'Digital L';
             case PAD_RM:
-                return 'Mission AZ';
+                return 'Unused R analog';
             case PAD_RT:
                 return 'Digital R';
         }
