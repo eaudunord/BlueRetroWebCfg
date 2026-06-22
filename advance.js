@@ -34,6 +34,7 @@ const SATURN_SYSTEM = 12;
 const DEV_PAD_ALT = 1;
 const ACC_MEM = 1;
 const SATURN_LABEL = labelName.indexOf('Saturn');
+const XBOX_LABEL = labelName.indexOf('Xbox One S / X|S');
 const PAD_RY_DOWN = 6;
 const PAD_RY_UP = 7;
 const PAD_LM = 24;
@@ -89,6 +90,27 @@ function getDstLabel(btnId) {
         }
     }
     return btnList[btnId][destLabel];
+}
+
+function getSrcLabel(btnId) {
+    if (srcLabel == XBOX_LABEL) {
+        switch (btnId) {
+            case PAD_LT:
+                return 'Digital LT';
+            case PAD_RT:
+                return 'Digital RT';
+        }
+    }
+    return btnList[btnId][srcLabel];
+}
+
+function getSrcOptionsHtml() {
+    var str = "";
+
+    for (var i = 0; i < btnList.length; i++) {
+        str += "<option value=\"" + i + "\">" + getSrcLabel(i) + "</option>";
+    }
+    return str;
 }
 
 function getDstOptionsHtml() {
@@ -449,7 +471,7 @@ function initFirstOutputMapping() {
     for (var i = 0; i < btnList.length; i++) {
         var option  = document.createElement("option");
         option.value = i;
-        option.text = btnList[i][srcLabel];
+        option.text = getSrcLabel(i);
         src.add(option);
     }
     src.setAttribute("class", "src");
@@ -663,7 +685,7 @@ function initOutputMapping() {
     for (var i = 0; i < btnList.length; i++) {
         var option  = document.createElement("option");
         option.value = i;
-        option.text = btnList[i][srcLabel];
+        option.text = getSrcLabel(i);
         src.add(option);
     }
     src.setAttribute("class", "src");
@@ -1309,14 +1331,12 @@ function selectInput() {
 
 function changeSrcLabel() {
     var select = document.getElementsByClassName("src");
-    var str = ""
+    var str;
     var tmp;
 
     srcLabel = this.value;
+    str = getSrcOptionsHtml();
 
-    for (var i = 0; i < btnList.length; i++) {
-        str += "<option value=\"" + i + "\">" + btnList[i][srcLabel] + "</option>";
-    }
     for (var i = 0; i < select.length; i++) {
         tmp = select[i].value;
         select[i].innerHTML = str;
